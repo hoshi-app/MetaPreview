@@ -67,8 +67,8 @@ def load_inter_regular(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFon
 
 
 def apply_logo_color(
-    logo: Image.Image,
-    color: tuple[int, int, int] = LOGO_COLOR,
+        logo: Image.Image,
+        color: tuple[int, int, int] = LOGO_COLOR,
 ) -> Image.Image:
     logo = logo.convert("RGBA")
     alpha = logo.getchannel("A")
@@ -124,9 +124,9 @@ def _line_height(font: ImageFont.FreeTypeFont | ImageFont.ImageFont) -> int:
 
 
 def _text_width(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+        draw: ImageDraw.ImageDraw,
+        text: str,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
 ) -> float:
     if hasattr(draw, "textlength"):
         return draw.textlength(text, font=font)
@@ -135,10 +135,10 @@ def _text_width(
 
 
 def ellipsize_line(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
-    max_width: int,
+        draw: ImageDraw.ImageDraw,
+        text: str,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+        max_width: int,
 ) -> str:
     text = text.rstrip()
     if _text_width(draw, text, font) <= max_width:
@@ -151,10 +151,10 @@ def ellipsize_line(
 
 
 def wrap_text_lines(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
-    max_width: int,
+        draw: ImageDraw.ImageDraw,
+        text: str,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+        max_width: int,
 ) -> list[str]:
     words = text.split()
     if not words:
@@ -174,11 +174,11 @@ def wrap_text_lines(
 
 
 def fit_description_lines(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
-    max_width: int,
-    max_height: int,
+        draw: ImageDraw.ImageDraw,
+        text: str,
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+        max_width: int,
+        max_height: int,
 ) -> list[str]:
     lines = wrap_text_lines(draw, text, font, max_width)
     line_height = _line_height(font)
@@ -193,13 +193,13 @@ def fit_description_lines(
 
 
 def draw_description(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    xy: tuple[int, int],
-    font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
-    color: tuple[int, int, int],
-    max_width: int,
-    max_height: int,
+        draw: ImageDraw.ImageDraw,
+        text: str,
+        xy: tuple[int, int],
+        font: ImageFont.FreeTypeFont | ImageFont.ImageFont,
+        color: tuple[int, int, int],
+        max_width: int,
+        max_height: int,
 ) -> None:
     x, y = xy
     line_height = _line_height(font)
@@ -209,10 +209,10 @@ def draw_description(
 
 
 def render_selector_poster_layer(
-    posters: list,
-    *,
-    poster_source: str = POSTER_SOURCE,
-    perspective_supersample: int = POSTER_LAYER_SCALE,
+        posters: list,
+        *,
+        poster_source: str = POSTER_SOURCE,
+        perspective_supersample: int = POSTER_LAYER_SCALE,
 ) -> Image.Image:
     output_size = SELECTOR_OUTPUT_SIZE
 
@@ -241,11 +241,11 @@ def paste_layer_right_full_height(canvas: Image.Image, layer: Image.Image) -> No
 
 
 def generate_selector_preview(
-    name: str,
-    description: str,
-    posters: list,
-    *,
-    poster_source: str = POSTER_SOURCE,
+        name: str,
+        description: str,
+        posters: list,
+        *,
+        poster_source: str = POSTER_SOURCE,
 ) -> Image.Image:
     canvas = Image.new("RGB", CANVAS_SIZE, BG_COLOR)
     draw = ImageDraw.Draw(canvas)
@@ -280,12 +280,12 @@ def generate_selector_preview(
 
 
 def generate_preview(
-    mode: PreviewMode,
-    name: str,
-    description: str,
-    posters: list,
-    *,
-    poster_source: str = POSTER_SOURCE,
+        mode: PreviewMode,
+        name: str,
+        description: str,
+        posters: list,
+        *,
+        poster_source: str = POSTER_SOURCE,
 ) -> Image.Image:
     if mode == PreviewMode.SELECTOR:
         return generate_selector_preview(
@@ -302,17 +302,27 @@ if __name__ == "__main__":
 
     name = "Название селектора"
     description = (
-        "Короткое описание селектора для превью. Текст автоматически переносится "
-        "по ширине блока и обрезается многоточием, если не помещается по высоте."
+        "Короткое описание селектора для превью. Съешь ещё этих мягких французских булок, да выпей же чаю"
     )
-    posters = list_local_posters()
+    posters = [
+        "https://shikimori.io/uploads/poster/animes/52991/dc841cc9fce2aa1e9907a4b61c5d1d92.jpeg",
+        "https://shikimori.io/uploads/poster/animes/43608/1a267ded89ab0ec3e0d88652c5498016.jpeg",
+        "https://shikimori.io/uploads/poster/animes/28851/a98ffda9b7409d610aae10147d35658a.jpeg",
+        "https://shikimori.io/uploads/poster/animes/61316/79e6a0c31589176e3244c6117dab2500.jpeg",
+        "https://shikimori.io/uploads/poster/animes/32281/ccb50552557ea3085135887df337623a.jpeg",
+        "https://shikimori.io/uploads/poster/animes/54492/283fbef180e72bacfadc5a3d64ca4c2e.jpeg",
+        "https://shikimori.io/uploads/poster/animes/37987/56162d8986e2eb203031bb25c821b5c7.jpeg",
+        "https://shikimori.io/uploads/poster/animes/199/8fffb098b0dfa011cd8431d46425d989.jpeg",
+        "https://shikimori.io/uploads/poster/animes/60489/5d1461c507ab9a29f1d37b952793a459.jpeg",
+        "https://shikimori.io/uploads/poster/animes/47917/35b343a77242f2ab85e5fe10905c7e4b.jpeg"
+    ]
 
     image = generate_preview(
         PreviewMode.SELECTOR,
         name,
         description,
         posters,
-        poster_source="local",
+        poster_source="network",
     )
     output_path = ROOT_DIR / "selector_preview.png"
     image.save(output_path)

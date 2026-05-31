@@ -1,3 +1,5 @@
+from collections import deque
+
 from PIL import Image, ImageChops, ImageDraw, ImageOps
 from io import BytesIO
 from pathlib import Path
@@ -29,6 +31,8 @@ CARD_GAP = 12
 BORDER_WIDTH = 2
 BORDER_COLOR = (210, 210, 210)
 CORNER_RADIUS = 12
+POSTER_MIN_CHEBYSHEV_DISTANCE = 2  # same poster not within N cells (Chebyshev)
+POSTER_RECENT_WINDOW = 6  # penalize posters picked in the last N placements
 POSTER_SOURCE = "local"  # "local" | "network"
 LOG_LEVEL = "INFO"  # DEBUG | INFO | WARNING | ERROR
 DEV_POSTERS_DIR = Path(__file__).parent / "dev_posters"
@@ -152,9 +156,92 @@ def load_poster_pool(sources, poster_source=POSTER_SOURCE):
     return pool
 
 
-def pick_random_poster(pool, poster_w, poster_h):
-    img = random.choice(pool)
-    return resize_poster(img, poster_w, poster_h)
+def _chebyshev_distance(row_a, col_a, row_b, col_b):
+    return max(abs(row_a - row_b), abs(col_a - col_b))
+
+
+def _preferred_poster_spacing(pool_size):
+    if pool_size <= 1:
+        return 0
+    if pool_size <= 3:
+        return 1
+    return POSTER_MIN_CHEBYSHEV_DISTANCE
+
+
+def _forbidden_neighbor_indices(assignments, row, col, min_distance):
+    forbidden = set()
+    for r, row_assignments in enumerate(assignments):
+        for c, poster_idx in enumerate(row_assignments):
+            if poster_idx is None:
+                continue
+            dist = _chebyshev_distance(row, col, r, c)
+            if 0 < dist <= min_distance:
+                forbidden.add(poster_idx)
+    return forbidden
+
+
+def _neighbor_usage_counts(assignments, row, col, min_distance):
+    counts: dict[int, int] = {}
+    for r, row_assignments in enumerate(assignments):
+        for c, poster_idx in enumerate(row_assignments):
+            if poster_idx is None:
+                continue
+            dist = _chebyshev_distance(row, col, r, c)
+            if dist == 0 or dist > min_distance:
+                continue
+            weight = min_distance + 1 - dist
+            counts[poster_idx] = counts.get(poster_idx, 0) + weight
+    return counts
+
+
+def _pick_least_used(candidates, usage_counts, pool_size):
+    min_usage = min(usage_counts.get(i, 0) for i in candidates)
+    tied = [i for i in candidates if usage_counts.get(i, 0) == min_usage]
+    return random.choice(tied)
+
+
+def assign_poster_grid_indices(
+    pool_size,
+    grid_columns,
+    grid_rows,
+    min_distance=None,
+):
+    if pool_size <= 0:
+        raise ValueError("pool_size must be positive")
+
+    if min_distance is None:
+        min_distance = _preferred_poster_spacing(pool_size)
+
+    if min_distance <= 0 or pool_size == 1:
+        return [
+            [random.randrange(pool_size) for _ in range(grid_columns)]
+            for _ in range(grid_rows)
+        ]
+
+    assignments: list[list[int | None]] = [
+        [None] * grid_columns for _ in range(grid_rows)
+    ]
+    cells = [(row, col) for row in range(grid_rows) for col in range(grid_columns)]
+    random.shuffle(cells)
+    recent: deque[int] = deque(maxlen=POSTER_RECENT_WINDOW)
+
+    for row, col in cells:
+        forbidden = _forbidden_neighbor_indices(assignments, row, col, min_distance)
+        candidates = [i for i in range(pool_size) if i not in forbidden]
+
+        if candidates:
+            fresh = [i for i in candidates if i not in recent]
+            pick = random.choice(fresh or candidates)
+        else:
+            usage = _neighbor_usage_counts(assignments, row, col, min_distance)
+            for idx in recent:
+                usage[idx] = usage.get(idx, 0) + 2
+            pick = _pick_least_used(list(range(pool_size)), usage, pool_size)
+
+        assignments[row][col] = pick
+        recent.append(pick)
+
+    return [[int(cell) for cell in row] for row in assignments]
 
 
 def create_rounded_mask(size, radius):
@@ -533,11 +620,21 @@ def build_poster_grid(
         canvas_h,
     )
 
+    poster_indices = assign_poster_grid_indices(
+        len(poster_pool),
+        grid_columns,
+        grid_rows,
+    )
+
     for row in range(grid_rows):
         for col in range(grid_columns):
             card_index = row * grid_columns + col + 1
             logger.debug("Placing poster %s/%s at row=%s col=%s", card_index, total_cards, row, col)
-            poster = pick_random_poster(poster_pool, poster_w, poster_h)
+            poster = resize_poster(
+                poster_pool[poster_indices[row][col]],
+                poster_w,
+                poster_h,
+            )
             card = create_poster_card(poster)
             paste_card(
                 grid,
