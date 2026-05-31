@@ -324,6 +324,6 @@ if __name__ == "__main__":
         posters,
         poster_source="network",
     )
-    output_path = ROOT_DIR / "selector_preview.png"
+    output_path = SOURCES_DIR / "selector_preview.png"
     image.save(output_path)
     print(f"Saved -> {output_path.resolve()}")

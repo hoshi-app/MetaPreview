@@ -201,10 +201,10 @@ def _pick_least_used(candidates, usage_counts, pool_size):
 
 
 def assign_poster_grid_indices(
-    pool_size,
-    grid_columns,
-    grid_rows,
-    min_distance=None,
+        pool_size,
+        grid_columns,
+        grid_rows,
+        min_distance=None,
 ):
     if pool_size <= 0:
         raise ValueError("pool_size must be positive")
@@ -255,10 +255,10 @@ def create_rounded_mask(size, radius):
 
 
 def create_poster_card(
-    poster_img,
-    border_width=BORDER_WIDTH,
-    border_color=BORDER_COLOR,
-    corner_radius=CORNER_RADIUS,
+        poster_img,
+        border_width=BORDER_WIDTH,
+        border_color=BORDER_COLOR,
+        corner_radius=CORNER_RADIUS,
 ):
     poster_w, poster_h = poster_img.size
     card_w = poster_w + border_width * 2
@@ -453,13 +453,13 @@ def perspective_coefficients(dest_points, source_points):
 
 
 def apply_view_perspective(
-    grid,
-    crop_box,
-    output_size,
-    z_rotation=Z_ROTATION,
-    view_tilt_x=VIEW_TILT_X,
-    view_tilt_y=VIEW_TILT_Y,
-    output_margin=OUTPUT_MARGIN,
+        grid,
+        crop_box,
+        output_size,
+        z_rotation=Z_ROTATION,
+        view_tilt_x=VIEW_TILT_X,
+        view_tilt_y=VIEW_TILT_Y,
+        output_margin=OUTPUT_MARGIN,
 ):
     left, top, right, bottom = crop_box
     viewport_w = right - left
@@ -511,11 +511,11 @@ def apply_view_perspective(
 
 
 def apply_view_perspective_supersampled(
-    grid,
-    crop_box,
-    output_size,
-    supersample=2,
-    **kwargs,
+        grid,
+        crop_box,
+        output_size,
+        supersample=2,
+        **kwargs,
 ):
     if supersample <= 1:
         return apply_view_perspective(grid, crop_box, output_size, **kwargs)
@@ -577,14 +577,14 @@ def apply_opacity_mask(image, mask_path=OPACITY_MASK_PATH, output_size=None):
 
 
 def build_poster_grid(
-    poster_pool,
-    grid_columns,
-    grid_rows,
-    poster_w,
-    poster_h,
-    output_size,
-    grid_offset_x=GRID_OFFSET_X,
-    grid_offset_y=GRID_OFFSET_Y,
+        poster_pool,
+        grid_columns,
+        grid_rows,
+        poster_w,
+        poster_h,
+        output_size,
+        grid_offset_x=GRID_OFFSET_X,
+        grid_offset_y=GRID_OFFSET_Y,
 ):
     card_w = poster_w + BORDER_WIDTH * 2
     card_h = poster_h + BORDER_WIDTH * 2
@@ -595,9 +595,9 @@ def build_poster_grid(
     grid_h = grid_rows * cell_h
     viewport_w, viewport_h = compute_viewport_size(grid_w, grid_h, output_size)
     padding = (
-        int(math.hypot(viewport_w, viewport_h) * 0.25)
-        + max(cell_w, cell_h)
-        + max(abs(grid_offset_x), abs(grid_offset_y))
+            int(math.hypot(viewport_w, viewport_h) * 0.25)
+            + max(cell_w, cell_h)
+            + max(abs(grid_offset_x), abs(grid_offset_y))
     )
 
     canvas_w = int(viewport_w + padding * 2)
@@ -655,20 +655,20 @@ def build_poster_grid(
 
 
 def make_background(
-    output_size=OUTPUT_SIZE,
-    grid_columns=GRID_COLUMNS,
-    grid_rows=GRID_ROWS,
-    grid_offset_x=GRID_OFFSET_X,
-    grid_offset_y=GRID_OFFSET_Y,
-    z_rotation=Z_ROTATION,
-    view_tilt_x=VIEW_TILT_X,
-    view_tilt_y=VIEW_TILT_Y,
-    poster_height=240,
-    poster_source=POSTER_SOURCE,
-    sources=None,
-    image_urls=None,
-    dev_posters_dir=DEV_POSTERS_DIR,
-    perspective_supersample=1,
+        output_size=OUTPUT_SIZE,
+        grid_columns=GRID_COLUMNS,
+        grid_rows=GRID_ROWS,
+        grid_offset_x=GRID_OFFSET_X,
+        grid_offset_y=GRID_OFFSET_Y,
+        z_rotation=Z_ROTATION,
+        view_tilt_x=VIEW_TILT_X,
+        view_tilt_y=VIEW_TILT_Y,
+        poster_height=240,
+        poster_source=POSTER_SOURCE,
+        sources=None,
+        image_urls=None,
+        dev_posters_dir=DEV_POSTERS_DIR,
+        perspective_supersample=1,
 ):
     if sources is not None:
         resolved_sources = list(sources)
@@ -734,13 +734,16 @@ def make_background(
 
 
 NETWORK_IMAGE_URLS = [
-    "https://shikimori.io/uploads/poster/animes/62913/6793cdc39f4a2ade8e1e75262e366f0c.jpeg",
-    "https://shikimori.io/uploads/poster/animes/62964/96eea4a3836b26cadba92ba23817fea1.jpeg",
-    "https://shikimori.io/uploads/poster/animes/60444/7f5ac83511c28bfbf5acffecd4b6446a.jpeg",
-    "https://shikimori.io/uploads/poster/animes/62604/af88450a4152a7e8553d8dbab03f50f7.jpeg",
-    "https://shikimori.io/uploads/poster/animes/61663/ebaa5e064c82e526ae46cac08c8fd148.jpeg",
-    "https://shikimori.io/uploads/poster/animes/62171/e8566e62f38b4b46a12d6897b08c060d.jpeg",
-    "https://shikimori.io/uploads/poster/animes/61469/233a58cbe4a5d4db60efe51646eb5efe.jpeg",
+    "https://shikimori.io/uploads/poster/animes/52991/dc841cc9fce2aa1e9907a4b61c5d1d92.jpeg",
+    "https://shikimori.io/uploads/poster/animes/43608/1a267ded89ab0ec3e0d88652c5498016.jpeg",
+    "https://shikimori.io/uploads/poster/animes/28851/a98ffda9b7409d610aae10147d35658a.jpeg",
+    "https://shikimori.io/uploads/poster/animes/61316/79e6a0c31589176e3244c6117dab2500.jpeg",
+    "https://shikimori.io/uploads/poster/animes/32281/ccb50552557ea3085135887df337623a.jpeg",
+    "https://shikimori.io/uploads/poster/animes/54492/283fbef180e72bacfadc5a3d64ca4c2e.jpeg",
+    "https://shikimori.io/uploads/poster/animes/37987/56162d8986e2eb203031bb25c821b5c7.jpeg",
+    "https://shikimori.io/uploads/poster/animes/199/8fffb098b0dfa011cd8431d46425d989.jpeg",
+    "https://shikimori.io/uploads/poster/animes/60489/5d1461c507ab9a29f1d37b952793a459.jpeg",
+    "https://shikimori.io/uploads/poster/animes/47917/35b343a77242f2ab85e5fe10905c7e4b.jpeg"
 ]
 
 if __name__ == "__main__":
