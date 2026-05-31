@@ -423,6 +423,27 @@ def apply_view_perspective(
     return apply_output_zoom(result, output_size, output_margin)
 
 
+def apply_view_perspective_supersampled(
+    grid,
+    crop_box,
+    output_size,
+    supersample=2,
+    **kwargs,
+):
+    if supersample <= 1:
+        return apply_view_perspective(grid, crop_box, output_size, **kwargs)
+
+    hi_w = output_size[0] * supersample
+    hi_h = output_size[1] * supersample
+    hi_res = apply_view_perspective(
+        grid,
+        crop_box,
+        (hi_w, hi_h),
+        **kwargs,
+    )
+    return hi_res.resize(output_size, Image.Resampling.LANCZOS)
+
+
 def load_opacity_mask(mask_path, target_size):
     mask_img = Image.open(mask_path)
     if mask_img.mode == "RGBA":
@@ -547,17 +568,22 @@ def make_background(
     view_tilt_y=VIEW_TILT_Y,
     poster_height=240,
     poster_source=POSTER_SOURCE,
+    sources=None,
     image_urls=None,
     dev_posters_dir=DEV_POSTERS_DIR,
+    perspective_supersample=1,
 ):
-    if poster_source == "local":
-        sources = list_local_posters(dev_posters_dir)
+    if sources is not None:
+        resolved_sources = list(sources)
+    elif poster_source == "local":
+        resolved_sources = list_local_posters(dev_posters_dir)
     elif poster_source == "network":
         if not image_urls:
             raise ValueError("image_urls is required when poster_source='network'")
-        sources = image_urls
+        resolved_sources = image_urls
     else:
         raise ValueError(f"Unknown poster_source: {poster_source!r}")
+    sources = resolved_sources
 
     logger.info(
         "Render start | source=%s | output=%sx%s | grid=%sx%s | poster_height=%s",
@@ -589,13 +615,24 @@ def make_background(
         grid_offset_y=grid_offset_y,
     )
 
+    perspective_kwargs = dict(
+        z_rotation=z_rotation,
+        view_tilt_x=view_tilt_x,
+        view_tilt_y=view_tilt_y,
+    )
+    if perspective_supersample > 1:
+        return apply_view_perspective_supersampled(
+            grid,
+            crop_box,
+            output_size,
+            supersample=perspective_supersample,
+            **perspective_kwargs,
+        )
     return apply_view_perspective(
         grid,
         crop_box,
         output_size,
-        z_rotation=z_rotation,
-        view_tilt_x=view_tilt_x,
-        view_tilt_y=view_tilt_y,
+        **perspective_kwargs,
     )
 
 
@@ -609,16 +646,17 @@ NETWORK_IMAGE_URLS = [
     "https://shikimori.io/uploads/poster/animes/61469/233a58cbe4a5d4db60efe51646eb5efe.jpeg",
 ]
 
-if POSTER_SOURCE == "local":
-    setup_logging()
-    logger.info("MetaPreview started | poster_source=local")
-    img = make_background()
-else:
-    setup_logging()
-    logger.info("MetaPreview started | poster_source=network")
-    img = make_background(poster_source="network", image_urls=NETWORK_IMAGE_URLS)
+if __name__ == "__main__":
+    if POSTER_SOURCE == "local":
+        setup_logging()
+        logger.info("MetaPreview started | poster_source=local")
+        img = make_background()
+    else:
+        setup_logging()
+        logger.info("MetaPreview started | poster_source=network")
+        img = make_background(poster_source="network", image_urls=NETWORK_IMAGE_URLS)
 
-output_path = Path("result.png")
-img = apply_opacity_mask(img, output_size=OUTPUT_SIZE)
-img.save(output_path)
-logger.info("Saved result -> %s | size=%sx%s", output_path.resolve(), img.width, img.height)
+    output_path = Path("result.png")
+    img = apply_opacity_mask(img, output_size=OUTPUT_SIZE)
+    img.save(output_path)
+    logger.info("Saved result -> %s | size=%sx%s", output_path.resolve(), img.width, img.height)
